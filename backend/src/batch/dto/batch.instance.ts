@@ -12,7 +12,6 @@ export interface BatchJobInstanceRO {
 
 export interface BatchJobExecutionRO {
   batchJobExecution: BatchJobExecution[];
-  totalCount: number;
 }
 
 export interface BatchStepExecutionRO {

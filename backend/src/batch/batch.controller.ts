@@ -12,7 +12,7 @@ export class BatchController {
   @ApiOperation({ summary: 'Get all job instance' })
   @ApiResponse({ status: 200, description: 'Return all job instance.' })
   @Get("jobInstances")
-  async findJobInstanceAll(@Query() query): Promise<BatchJobInstanceRO> {
+  async findJobInstanceAll(@Query() query: ExecuteParam): Promise<BatchJobInstanceRO> {
     return await this.batchService.findJobInstanceAll(query);
   }
 
