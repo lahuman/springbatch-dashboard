@@ -40,7 +40,7 @@ export class BatchService {
 
   async findJobExecutionAll(jobInstanceId: string, status: ExecuteParam): Promise<BatchJobExecutionRO> {
     const whereCondition = this._makeWhereCondition(status, { lastUpdated: 'DESC' });
-    whereCondition['where']['jobInstanceId'] = jobInstanceId;
+    jobInstanceId && (whereCondition['where']['jobInstanceId'] = jobInstanceId);
 
     const batchJobExecution = await this.jobExecutionRepository.find(whereCondition);
     return { batchJobExecution };
@@ -48,10 +48,22 @@ export class BatchService {
 
   async findStepExecutionAll(jobExecutionId: string, status: ExecuteParam): Promise<BatchStepExecutionRO> {
     const whereCondition = this._makeWhereCondition(status, { lastUpdated: 'ASC' });
-    whereCondition['where']['jobExecutionId'] = jobExecutionId;
+    jobExecutionId && (whereCondition['where']['jobExecutionId'] = jobExecutionId);
 
     const batchStepExecution = await this.stepExecutionRepository.find(whereCondition);
     return { batchStepExecution };
   }
 
+  async findDashBoardData(): Promise<any> {
+    const data = await this.jobInstanceRepository.createQueryBuilder("job")
+      .select(["job.jobInstanceId", "job.jobName","execut.status"])
+      .leftJoin(BatchJobExecution, "execut", "job.jobInstanceId = execut.jobInstanceId")
+      .addSelect("COUNT(1)", 'CNT')
+      .groupBy("job.jobInstanceId")
+      .addGroupBy("job.jobName")
+      .addGroupBy("execut.status")
+      .addGroupBy("execut.jobInstanceId")
+      .getMany();
+    return data;
+  }
 }

@@ -177,16 +177,16 @@ export default function App() {
           <div className={classes.appBarSpacer} />
           <Container maxWidth="lg" className={classes.container}>
             <Switch>
-              <Route path="/jobExecution">
+              <Route path="/jobExecution/:id?">
                 <JobExecution />
               </Route>
-              <Route path="/stepExecution">
+              <Route path="/stepExecution/:id?">
                 <StepExecution />
               </Route>
               <Route path="/job">
                 <Job />
               </Route>
-              <Route path="/">
+              <Route exect path="/">
                 <Dashboard />
               </Route>
             </Switch>

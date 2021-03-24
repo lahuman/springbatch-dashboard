@@ -10,7 +10,7 @@ export class BatchStepExecution {
 
   @Column()
   jobExecutionId: number;
-  
+
   @Column()
   version: number;
 
@@ -34,7 +34,7 @@ export class BatchStepExecution {
 
   @Column()
   filterCount: number;
-  
+
   @Column()
   writeCount: number;
 
@@ -60,7 +60,7 @@ export class BatchStepExecution {
   lastUpdated: Date;
 
   @ManyToOne(type => BatchJobExecution, job => job.stepExecution)
-  @JoinColumn({ name: 'jobExecutionId' })
+  @JoinColumn({ name: 'jobExecutionId' },)
   jobExecution: BatchJobExecution;
 
 

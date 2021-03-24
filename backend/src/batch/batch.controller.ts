@@ -18,17 +18,23 @@ export class BatchController {
 
   @ApiOperation({ summary: 'Get all job execution by job instance' })
   @ApiResponse({ status: 200, description: 'Return all job execution.' })
-  @Get("jobExecution/:jobInstanceId")
+  @Get("jobExecution/:jobInstanceId?")
   async findJobExecutionAll(@Param("jobInstanceId") jobInstanceId: string, @Query() status: ExecuteParam): Promise<BatchJobExecutionRO> {
     return await this.batchService.findJobExecutionAll(jobInstanceId, status);
   }
 
   @ApiOperation({ summary: 'Get all job execution by job execution' })
   @ApiResponse({ status: 200, description: 'Return all step execution.' })
-  @Get("stepExecution/:jobExecutionId")
+  @Get("stepExecution/:jobExecutionId?")
   async findStepExecutionAll(@Param("jobExecutionId") jobInstanceId: string, @Query() status: ExecuteParam): Promise<BatchStepExecutionRO> {
     return await this.batchService.findStepExecutionAll(jobInstanceId, status);
   }
 
+  @ApiOperation({ summary: 'Get Dashboard' })
+  @ApiResponse({ status: 200, description: 'Return dashboard data' })
+  @Get("dashBoard")
+  async Dashboard(): Promise<any> {
+    return await this.batchService.findDashBoardData();
+  }
 
 }
