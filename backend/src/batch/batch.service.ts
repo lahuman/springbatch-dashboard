@@ -88,7 +88,7 @@ export class BatchService {
       .addGroupBy("job.jobName")
       .addGroupBy("execut.status")
       .where("execut.lastUpdated >= :startDate", { startDate: status.startDate })
-      .andWhere("execut.lastUpdated <= :endDate", { endDate: status.endDate })
+      .andWhere("execut.lastUpdated <= concat(:endDate, ' 23:59:59')", { endDate: status.endDate })
       .getRawMany();
 
     const result = this._dashboardDataMerge(data);

@@ -66,7 +66,7 @@ export default function JobRunningDashboard() {
             bottom: 5,
           }}
           onClick={(dt, idx) => {
-            history.push(`/jobExecution/${dt.activePayload[0].payload.jobInstanceId}`);
+            dt.activePayload && history.push(`/jobExecution/${dt.activePayload[0].payload.jobInstanceId}`);
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
