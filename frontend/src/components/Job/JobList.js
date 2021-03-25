@@ -31,6 +31,7 @@ export default function JobInstance() {
   React.useEffect(() => {
     callList();
   }, [skip]);
+  
   const classes = useStyles();
   return (
     <React.Fragment>

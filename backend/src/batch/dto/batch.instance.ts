@@ -5,16 +5,19 @@ import { BatchJobInstance } from "../entity/jobInstance.entity";
 import { BatchStepExecution } from "../entity/stepExecution.entity";
 
 
-export interface BatchJobInstanceRO {
+export class BatchJobInstanceRO {
+  @ApiProperty({ required: true, isArray: true, type: BatchJobInstance })
   batchJobsInstance: BatchJobInstance[];
 }
 
 
-export interface BatchJobExecutionRO {
+export class BatchJobExecutionRO {
+  @ApiProperty({ required: true, isArray: true, type: BatchJobExecution })
   batchJobExecution: BatchJobExecution[];
 }
 
-export interface BatchStepExecutionRO {
+export class BatchStepExecutionRO {
+  @ApiProperty({ required: true, isArray: true, type: BatchStepExecution })
   batchStepExecution: BatchStepExecution[];
 }
 
@@ -25,4 +28,22 @@ export class ExecuteParam {
   take?: number;
   @ApiProperty({ required: false })
   skip?: number;
+}
+
+export class JobDashBoardParam {
+  @ApiProperty({ required: true })
+  startDate: string;
+  @ApiProperty({ required: true })
+  endDate: string;
+}
+
+export class JobRunningScoreRO {
+  @ApiProperty({ required: true })
+  jobInstanceId: string;
+  @ApiProperty({ required: true })
+  jobName: string;
+  @ApiProperty({ required: false })
+  failCount?: string
+  @ApiProperty({ required: false })
+  completCount?: string
 }

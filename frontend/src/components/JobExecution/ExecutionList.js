@@ -9,11 +9,10 @@ import Button from '@material-ui/core/Button';
 import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
-import { Link } from "react-router-dom";
-
-import { useParams, useHistory } from 'react-router-dom';
-import Title from '../Common/Title';
+import { useParams, useHistory, Link } from 'react-router-dom';
 import { format } from 'date-fns'
+
+import Title from '../Common/Title';
 
 
 const useStyles = makeStyles((theme) => ({
