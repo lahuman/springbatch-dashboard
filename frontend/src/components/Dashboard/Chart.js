@@ -3,7 +3,7 @@ import DateFnsUtils from '@material-ui/pickers/adapter/date-fns';
 import TextField from "@material-ui/core/TextField";
 import { subDays, format } from 'date-fns';
 import { useHistory } from 'react-router-dom';
-
+import Title from '../Common/Title';
 import { LocalizationProvider, DateRangePicker, DateRangeDelimiter } from '@material-ui/pickers';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -25,7 +25,7 @@ export default function JobRunningDashboard() {
 
   return (
     <LocalizationProvider dateAdapter={DateFnsUtils}>
-      <DateRangePicker
+      <Title style={{ display: 'flex' }}>Job Running Story &nbsp;&nbsp;&nbsp;&nbsp;<DateRangePicker
         inputFormat="yyyy-MM-dd"
         mask="____-__-__"
         startText="Start Date"
@@ -53,6 +53,7 @@ export default function JobRunningDashboard() {
           </React.Fragment>
         )}
       />
+      </Title>
       {data && <ResponsiveContainer width="100%" height="100%" >
         <BarChart
           width={500}
@@ -64,7 +65,7 @@ export default function JobRunningDashboard() {
             left: 20,
             bottom: 5,
           }}
-          onClick={(dt, idx)=> {
+          onClick={(dt, idx) => {
             history.push(`/jobExecution/${dt.activePayload[0].payload.jobInstanceId}`);
           }}
         >
