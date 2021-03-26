@@ -76,7 +76,7 @@ export default function JobExecution() {
 
   const [rows, setRows] = React.useState([]);
   const [skip, setSkip] = React.useState(0);
-  const [isMore, setIsMore] = React.useState(true);
+  const [isMore, setIsMore] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState('');
   const [jobId, setJobId] = React.useState(id || '');
