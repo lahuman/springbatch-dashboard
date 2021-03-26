@@ -67,6 +67,8 @@ const tableInfo = [
   }
 ];
 
+let intervalObj = null;
+let inputIntervalObj = null;
 
 export default function JobExecution() {
   const classes = useStyles();
@@ -93,6 +95,7 @@ export default function JobExecution() {
   const handleClose = () => {
     setOpen(false);
   };
+
   const take = 30;
 
   const callList = async () => {
@@ -104,8 +107,8 @@ export default function JobExecution() {
     }
   }
 
-  const jobCall = async (id, name) => {
-    const res = await fetch(`${process.env.REACT_APP_API_SERVER}/batch/jobInstances?${id ? `id=${id}` : ''}&${name ? `name=${name}` : ''}`);
+  const jobCall = async (jobIdVal, name) => {
+    const res = await fetch(`${process.env.REACT_APP_API_SERVER}/batch/jobInstances?${jobIdVal ? `id=${jobIdVal}` : ''}&${name ? `name=${name}` : ''}`);
     return await res.json();
   }
 
@@ -117,33 +120,42 @@ export default function JobExecution() {
     callback(data.batchJobsInstance.map(convetSelectObj));
   }
 
-
+  
   const searchAction = () => {
     setRows([]);
-    setIsMore(true);
-    history.replace(`/jobExecution/${jobId && jobId}`);
+    setIsMore(false);
     if (skip === 0) {
-      callList();
+      clearTimeout(intervalObj);
+      intervalObj = setTimeout(() => {
+        callList();
+      }, 500)
     } else {
       setSkip(0);
     }
   };
-  const setJobSelect = (id) => {
-    setJobId(id);
+
+  const setJobSelect = (jobIdVal) => {
+    setJobId(jobIdVal);
     setName('');
-    jobCall(id).then(jsonData => setSelectVal(jsonData.batchJobsInstance && convetSelectObj(jsonData.batchJobsInstance[0])));
+    jobCall(jobIdVal).then(jsonData => setSelectVal(jsonData.batchJobsInstance && convetSelectObj(jsonData.batchJobsInstance[0])));
   }
-  
+
+  React.useEffect(() => {
+    history.replace(`/jobExecution/${jobId && jobId}`);
+    clearInterval(inputIntervalObj);
+    inputIntervalObj = setTimeout(() => searchAction(), 500);
+  }, [jobId, name]);
+
   React.useEffect(() => {
     if (!id) {
       jobId !== '' && setJobId('');
       const paramName = location.search.replace('?name=', '');
       paramName !== '' && setName(paramName);
-
       setSelectVal(null);
     } else {
       setJobSelect(id)
     }
+
   }, [id]);
 
   React.useEffect(() => {
@@ -183,9 +195,6 @@ export default function JobExecution() {
             Remove
           </Button>
         <TextField label="Job Name" value={name} onChange={e => setName(e.target.value)} style={{margin: "0 100px 0 20px"}} />
-        <Button variant="contained" color="primary" size="small" onClick={searchAction}>
-          Search
-        </Button>
       </Title>
       <Table size="small">
         <TableHead>
