@@ -109,7 +109,7 @@ export default function JobExecution() {
     return await res.json();
   }
 
-  const convetSelectObj = (job) => ({ value: job.jobInstanceId, label: job.jobName });
+  const convetSelectObj = (job) => job && ({ value: job.jobInstanceId, label: job.jobName });
 
   const jobList = async (name, callback) => {
     if (name.length < 3) return;
@@ -130,17 +130,16 @@ export default function JobExecution() {
   };
   const setJobSelect = (id) => {
     setJobId(id);
+    setName('');
     jobCall(id).then(jsonData => setSelectVal(jsonData.batchJobsInstance && convetSelectObj(jsonData.batchJobsInstance[0])));
   }
-  React.useEffect(() => {
-    searchAction();
-  }, []);
-
+  
   React.useEffect(() => {
     if (!id) {
+      jobId !== '' && setJobId('');
       const paramName = location.search.replace('?name=', '');
       paramName !== '' && setName(paramName);
-      jobId !== '' && setJobId('');
+
       setSelectVal(null);
     } else {
       setJobSelect(id)
@@ -177,8 +176,14 @@ export default function JobExecution() {
               setSelectVal(data);
             }} />
         </div>
-        <TextField label="Job Name" value={name} onChange={e => setName(e.target.value)} style={{margin: "0 100px 0 0"}} />
-        <Button variant="contained" color="primary" onClick={searchAction}>
+          <Button variant="contained" color="" size="small" onClick={e=>{
+            setJobId('');
+            setSelectVal(null);
+            }}>
+            Remove
+          </Button>
+        <TextField label="Job Name" value={name} onChange={e => setName(e.target.value)} style={{margin: "0 100px 0 20px"}} />
+        <Button variant="contained" color="primary" size="small" onClick={searchAction}>
           Search
         </Button>
       </Title>
