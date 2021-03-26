@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Repository, getRepository, DeleteResult, FindManyOptions } from 'typeorm';
+import { Repository, Like, FindManyOptions } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BatchJobInstance } from './entity/jobInstance.entity';
 import { BatchJobInstanceRO, BatchJobExecutionRO, ExecuteParam, BatchStepExecutionRO, JobRunningScoreRO, JobDashBoardParam } from './dto/batch.instance';
@@ -34,7 +34,11 @@ export class BatchService {
     return whereCondition;
   }
   async findJobInstanceAll(status: ExecuteParam): Promise<BatchJobInstanceRO> {
-    const batchJobsInstance = await this.jobInstanceRepository.find(this._makeWhereCondition(status));
+    const whereCondition = this._makeWhereCondition(status);
+    status.name && (whereCondition['where']['jobName'] = Like(`%${status.name}%`));
+    status.id && (whereCondition['where']['jobInstanceId'] = status.id);
+
+    const batchJobsInstance = await this.jobInstanceRepository.find(whereCondition);
     return { batchJobsInstance };
   }
 
@@ -56,39 +60,37 @@ export class BatchService {
 
   _convertDashboardData(dt): JobRunningScoreRO {
     const data = {
-      jobInstanceId: dt.job_JOB_INSTANCE_ID,
       jobName: dt.job_JOB_NAME,
     };
 
     dt.execut_STATUS === "FAILED" ? data["failCount"] = dt.statusCnt : data["completCount"] = dt.statusCnt;
-
     return data;
   }
   _dashboardDataMerge(data): JobRunningScoreRO[] {
-    let beforId = -1;
+    let beforeName = -1;
     return data.reduce((acc, cur) => {
-      if (beforId === cur.job_JOB_INSTANCE_ID) {
+      if (beforeName === cur.job_JOB_NAME) {
         const before = acc.pop();
         acc.push({ ...before, ...this._convertDashboardData(cur) });
       } else {
         acc.push(this._convertDashboardData(cur));
       }
-      beforId = cur.job_JOB_INSTANCE_ID;
+      beforeName = cur.job_JOB_NAME;
       return acc;
     }, []);
   }
 
   async findDashBoardData(status: JobDashBoardParam): Promise<JobRunningScoreRO[]> {
     const data = await this.jobInstanceRepository.createQueryBuilder("job")
-      .select(["job.jobInstanceId", "job.jobName"])
+      .select(["job.jobName"])
       .leftJoin("job.batchJobExecution", "execut")
       .addSelect("execut.status")
       .addSelect("COUNT(execut.jobExecutionId)", 'statusCnt')
-      .groupBy("job.jobInstanceId")
       .addGroupBy("job.jobName")
       .addGroupBy("execut.status")
       .where("execut.lastUpdated >= :startDate", { startDate: status.startDate })
       .andWhere("execut.lastUpdated <= concat(:endDate, ' 23:59:59')", { endDate: status.endDate })
+      .orderBy("job.jobName")
       .getRawMany();
 
     const result = this._dashboardDataMerge(data);

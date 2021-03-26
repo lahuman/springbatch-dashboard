@@ -7,8 +7,8 @@ import TableHead from '@material-ui/core/TableHead';
 import Button from '@material-ui/core/Button';
 import TableRow from '@material-ui/core/TableRow';
 import { Link } from "react-router-dom";
-import Title from '../Common/Title';
 import fetch from 'node-fetch';
+import Title from '../Common/Title';
 
 const useStyles = makeStyles((theme) => ({
   seeMore: {
@@ -31,7 +31,7 @@ export default function JobInstance() {
   React.useEffect(() => {
     callList();
   }, [skip]);
-  
+
   const classes = useStyles();
   return (
     <React.Fragment>

@@ -28,6 +28,10 @@ export class ExecuteParam {
   take?: number;
   @ApiProperty({ required: false })
   skip?: number;
+  @ApiProperty({ required: false })
+  name?: string;
+  @ApiProperty({ required: false })
+  id?: string;
 }
 
 export class JobDashBoardParam {
@@ -38,8 +42,6 @@ export class JobDashBoardParam {
 }
 
 export class JobRunningScoreRO {
-  @ApiProperty({ required: true })
-  jobInstanceId: string;
   @ApiProperty({ required: true })
   jobName: string;
   @ApiProperty({ required: false })

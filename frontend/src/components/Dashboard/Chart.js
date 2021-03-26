@@ -25,7 +25,7 @@ export default function JobRunningDashboard() {
 
   return (
     <LocalizationProvider dateAdapter={DateFnsUtils}>
-      <Title style={{ display: 'flex' }}>Job Running Story &nbsp;&nbsp;&nbsp;&nbsp;<DateRangePicker
+      <Title>Job Running Story &nbsp;&nbsp;&nbsp;&nbsp;<DateRangePicker
         inputFormat="yyyy-MM-dd"
         mask="____-__-__"
         startText="Start Date"
@@ -66,7 +66,7 @@ export default function JobRunningDashboard() {
             bottom: 5,
           }}
           onClick={(dt, idx) => {
-            dt.activePayload && history.push(`/jobExecution/${dt.activePayload[0].payload.jobInstanceId}`);
+            dt.activePayload && history.push(`/jobExecution?name=${dt.activePayload[0].payload.jobName}`);
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
@@ -74,8 +74,8 @@ export default function JobRunningDashboard() {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar name="" dataKey="failCount" stackId="a" fill="red" />
-          <Bar dataKey="completCount" stackId="a" fill="green" />
+          <Bar name="FAIL COUNT" dataKey="failCount" stackId="a" fill="red" />
+          <Bar name="COMPLET COUNT" dataKey="completCount" stackId="a" fill="green" />
         </BarChart>
       </ResponsiveContainer>}
     </LocalizationProvider>

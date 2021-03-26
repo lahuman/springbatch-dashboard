@@ -8,9 +8,12 @@ import TableRow from '@material-ui/core/TableRow';
 import Button from '@material-ui/core/Button';
 import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
+import TextField from '@material-ui/core/TextField';
 import Fade from '@material-ui/core/Fade';
-import { useParams, useHistory, Link } from 'react-router-dom';
+import { useParams, useHistory, Link, useLocation } from 'react-router-dom';
 import { format } from 'date-fns'
+import AsyncSelect from 'react-select/async';
+
 
 import Title from '../Common/Title';
 
@@ -69,6 +72,7 @@ export default function JobExecution() {
   const classes = useStyles();
   const { id } = useParams();
   const history = useHistory();
+  const location = useLocation();
 
   const [rows, setRows] = React.useState([]);
   const [skip, setSkip] = React.useState(0);
@@ -77,6 +81,10 @@ export default function JobExecution() {
   const [errorMessage, setErrorMessage] = React.useState('');
   const [jobId, setJobId] = React.useState(id || '');
   const [isFirst, setIsFirst] = React.useState(false);
+  const [name, setName] = React.useState('');
+  const [selectVal, setSelectVal] = React.useState(null);
+
+
   const handleOpen = (msg) => {
     setErrorMessage(msg);
     setOpen(true);
@@ -88,7 +96,7 @@ export default function JobExecution() {
   const take = 30;
 
   const callList = async () => {
-    const res = await fetch(`${process.env.REACT_APP_API_SERVER}/batch/jobExecution/${jobId}?take=${take}&skip=${skip}`);
+    const res = await fetch(`${process.env.REACT_APP_API_SERVER}/batch/jobExecution/${jobId}?take=${take}&skip=${skip}${name!==''?`&name=${name}`:``}`);
     const data = await res.json();
     setRows(r => [...r, ...data.batchJobExecution]);
     if (data.batchJobExecution.length < take) {
@@ -96,7 +104,21 @@ export default function JobExecution() {
     }
   }
 
-  React.useEffect(() => {
+  const jobCall = async (id, name) => {
+    const res = await fetch(`${process.env.REACT_APP_API_SERVER}/batch/jobInstances?${id ? `id=${id}` : ''}&${name ? `name=${name}` : ''}`);
+    return await res.json();
+  }
+
+  const convetSelectObj = (job) => ({ value: job.jobInstanceId, label: job.jobName });
+
+  const jobList = async (name, callback) => {
+    if (name.length < 3) return;
+    const data = await jobCall(null, name);
+    callback(data.batchJobsInstance.map(convetSelectObj));
+  }
+
+
+  const searchAction = () => {
     setRows([]);
     setIsMore(true);
     history.replace(`/jobExecution/${jobId && jobId}`);
@@ -105,11 +127,23 @@ export default function JobExecution() {
     } else {
       setSkip(0);
     }
-  }, [jobId]);
+  };
+  const setJobSelect = (id) => {
+    setJobId(id);
+    jobCall(id).then(jsonData => setSelectVal(jsonData.batchJobsInstance && convetSelectObj(jsonData.batchJobsInstance[0])));
+  }
+  React.useEffect(() => {
+    searchAction();
+  }, []);
 
   React.useEffect(() => {
     if (!id) {
-      setJobId('');
+      const paramName = location.search.replace('?name=', '');
+      paramName !== '' && setName(paramName);
+      jobId !== '' && setJobId('');
+      setSelectVal(null);
+    } else {
+      setJobSelect(id)
     }
   }, [id]);
 
@@ -129,7 +163,25 @@ export default function JobExecution() {
 
   return (
     <React.Fragment>
-      <Title>Job Execution {!!isMore} &nbsp;&nbsp;&nbsp;&nbsp;{jobId && <span style={{ color: 'black' }}>선택된 Job Instance : {jobId}</span>}</Title>
+      <Title>Job Execution
+      
+        <div style={{ width: "200px" , margin: "0px 20px 0px 20px"}}>
+          <AsyncSelect
+            cacheOptions
+            defaultOptions
+            width='200px'
+            loadOptions={jobList}
+            value={selectVal}
+            onChange={(data) => {
+              setJobId(data.value);
+              setSelectVal(data);
+            }} />
+        </div>
+        <TextField label="Job Name" value={name} onChange={e => setName(e.target.value)} style={{margin: "0 100px 0 0"}} />
+        <Button variant="contained" color="primary" onClick={searchAction}>
+          Search
+        </Button>
+      </Title>
       <Table size="small">
         <TableHead>
           <TableRow>
@@ -142,7 +194,7 @@ export default function JobExecution() {
               {tableInfo.map((t, i) => <TableCell key={i}>
                 {t.dateFormat ? format(new Date(row[t.key]), "yyyy-MM-dd HH:mm") :
                   t.isStatus ? displayStatus(row[t.key], row[t.message]) :
-                    t.isJob ? <Button onClick={e => setJobId(row[t.key])}>{row[t.key]}</Button> :
+                    t.isJob ? <Button onClick={e => setJobSelect(row[t.key])}>{row[t.key]}</Button> :
                       t.isDetail ? <Link to={`/stepExecution/${row[t.key]}`}>{row[t.key]}</Link> :
                         row[t.key]}
               </TableCell>)}
