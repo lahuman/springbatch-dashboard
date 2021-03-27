@@ -43,11 +43,29 @@ export class BatchService {
   }
 
   async findJobExecutionAll(jobInstanceId: string, status: ExecuteParam): Promise<BatchJobExecutionRO> {
-    const whereCondition = this._makeWhereCondition(status, { lastUpdated: 'DESC' });
-    jobInstanceId && (whereCondition['where']['jobInstanceId'] = jobInstanceId);
 
-    const batchJobExecution = await this.jobExecutionRepository.find(whereCondition);
-    return { batchJobExecution };
+    const builder = this.jobExecutionRepository.createQueryBuilder("execut")
+      .leftJoin("execut.jobInstance", "job")
+      // .select("execute.status")
+      .addSelect("job.jobName")
+      .addSelect("job.jobInstanceId");
+
+    if (status.name) {
+      builder.andWhere("job.jobName like :name", { name: `%${status.name}%` });
+    }
+    if (jobInstanceId) {
+      builder.andWhere("execut.jobInstanceId = :jobInstanceId", { jobInstanceId });
+    }
+
+    if (status.take) {
+      builder.take(status.take);
+      builder.skip(status.skip);
+    }
+
+    const data = await builder.orderBy("execut.lastUpdated", "DESC")
+      .getMany();
+
+    return { batchJobExecution: data };
   }
 
   async findStepExecutionAll(jobExecutionId: string, status: ExecuteParam): Promise<BatchStepExecutionRO> {

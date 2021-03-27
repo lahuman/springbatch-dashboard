@@ -13,8 +13,8 @@ export class BatchJobExecution {
   @Column()
   version: number;
 
-  @Column()
-  jobInstanceId: number;
+  // @Column()
+  // jobInstanceId: number;
 
   @Column()
   createTime: Date;

@@ -44,7 +44,7 @@ const tableInfo = [
     name: 'Version',
     key: 'version'
   }, {
-    name: 'Job Instance ID',
+    name: 'Job Name',
     key: 'jobInstanceId',
     isJob: true,
   }, {
@@ -208,7 +208,7 @@ export default function JobExecution() {
               {tableInfo.map((t, i) => <TableCell key={i}>
                 {t.dateFormat ? format(new Date(row[t.key]), "yyyy-MM-dd HH:mm") :
                   t.isStatus ? displayStatus(row[t.key], row[t.message]) :
-                    t.isJob ? <Button onClick={e => setJobSelect(row[t.key])}>{row[t.key]}</Button> :
+                    t.isJob ? <Button onClick={e => setJobSelect(row.jobInstance[t.key])}>{row.jobInstance.jobName}</Button> :
                       t.isDetail ? <Link to={`/stepExecution/${row[t.key]}`}>{row[t.key]}</Link> :
                         row[t.key]}
               </TableCell>)}
