@@ -2,7 +2,7 @@
 
 We developed a search function for Meta information of Spring Batch.
 
-The existing [Spring Batch Admin](https://docs.spring.io/spring-batch-admin/trunk/) was terminated, and [spring-cloud-dataflow] (https://spring.io/projects/spring-cloud-dataflow) is recommended.
+The existing [Spring Batch Admin](https://docs.spring.io/spring-batch-admin/trunk/) was terminated, and [spring-cloud-dataflow](https://spring.io/projects/spring-cloud-dataflow) is recommended.
 
 Developed for simple BATCH execution MEAT information inquiry.
 
