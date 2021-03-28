@@ -9,8 +9,10 @@ import Button from '@material-ui/core/Button';
 import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
+import Grid from '@material-ui/core/Grid';
+import TextField from '@material-ui/core/TextField';
 import { useParams, useHistory } from 'react-router-dom';
-
+import { Link } from 'react-router-dom';
 import Title from '../Common/Title';
 import { format } from 'date-fns'
 
@@ -38,8 +40,8 @@ const tableInfo = [
     key: 'stepExecutionId'
   },
   {
-    name: 'Job Execution ID',
-    key: 'jobExecutionId',
+    name: 'Job Name',
+    key: 'JobName',
     isJob: true,
   },
   {
@@ -72,6 +74,7 @@ const tableInfo = [
 
 ];
 
+let intervalObj = null;
 
 export default function JobExecution() {
   const classes = useStyles();
@@ -85,6 +88,8 @@ export default function JobExecution() {
   const [isFirst, setIsFirst] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState('');
   const [jobId, setJobId] = React.useState(id || '');
+  const [name, setName] = React.useState('');
+  const take = 30;
 
   const handleOpen = (msg) => {
     setErrorMessage(msg);
@@ -94,10 +99,9 @@ export default function JobExecution() {
   const handleClose = () => {
     setOpen(false);
   };
-  const take = 30;
 
   const callList = async () => {
-    const res = await fetch(`${process.env.REACT_APP_API_SERVER}/batch/stepExecution/${jobId}?take=${take}&skip=${skip}`);
+    const res = await fetch(`${process.env.REACT_APP_API_SERVER}/batch/stepExecution/${jobId}?take=${take}&skip=${skip}${name !== '' ? `&name=${name}` : ``}`);
     const data = await res.json();
     setRows(r => [...r, ...data.batchStepExecution]);
     if (data.batchStepExecution.length < take) {
@@ -105,12 +109,31 @@ export default function JobExecution() {
     }
   }
 
+  const searchAction = () => {
+    setRows([]);
+    setIsMore(false);
+    if (skip === 0) {
+      clearTimeout(intervalObj);
+      intervalObj = setTimeout(() => {
+        callList();
+      }, 500)
+    } else {
+      setSkip(0);
+    }
+  };
+
+
+  React.useEffect(() => {
+    searchAction();
+  }, [name]);
+
+
   React.useEffect(() => {
     setRows([]);
     setIsMore(true);
     history.replace(`/stepExecution/${jobId && jobId}`);
     if (skip === 0) {
-      callList();
+      searchAction();
     } else {
       setSkip(0);
     }
@@ -127,7 +150,7 @@ export default function JobExecution() {
       setIsFirst(true);
       return;
     }
-    callList();
+    searchAction();
   }, [skip]);
 
   const displayStatus = (status, msg) => {
@@ -138,51 +161,67 @@ export default function JobExecution() {
 
   return (
     <React.Fragment>
-      <Title>Step Execution {!!isMore} &nbsp;&nbsp;&nbsp;&nbsp;{jobId && <span style={{ color: 'black' }}>선택된 Job Execution : {jobId}</span>}</Title>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            {tableInfo.map((t, i) => <TableCell key={i}>{t.name}</TableCell>)}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row[tableInfo[0].key]}>
-              {tableInfo.map((t, i) => <TableCell key={i}>
-                {t.dateFormat ? format(new Date(row[t.key]), "yyyy-MM-dd HH:mm") :
-                  t.isStatus ? displayStatus(row[t.key], row[t.message]) :
-                    t.isJob ? <Button onClick={e => setJobId(row[t.key])}>{row[t.key]}</Button> :
-                      t.isCount ? <span>{t.key.map((c, i) => row[c]).join('/')}</span> :
-                        row[t.key]}
-              </TableCell>)}
+      <Grid container style={{ flexGrow: 1 }}>
+        <Grid item xs={12} style={{ marginBottom: '20px' }}>
+          <Grid container direction="row"
+            justify="space-between"
+            alignItems="center" spacing={2}>
+            <Grid item >
+              <Title>Step Execution</Title>
+            </Grid>
+            <Grid item >
+              {jobId && `Selected Job Execute ID : ${jobId}`}
+            </Grid>
+            <Grid item>
+              <TextField label="Search Step" placeholder="Step Name" value={name} style={{ width: '400px' }} onChange={e => setName(e.target.value)} />
+            </Grid>
+          </Grid>
+        </Grid>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              {tableInfo.map((t, i) => <TableCell key={i}>{t.name}</TableCell>)}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      {isMore && <div className={classes.seeMore}>
-        <Button onClick={e => { setSkip(s => s + take); }}>
-          See more orders
+          </TableHead>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row[tableInfo[0].key]}>
+                {tableInfo.map((t, i) => <TableCell key={i}>
+                  {t.dateFormat ? format(new Date(row[t.key]), "yyyy-MM-dd HH:mm") :
+                    t.isStatus ? displayStatus(row[t.key], row[t.message]) :
+                      t.isJob ? <Link to={`/jobExecution?name=${row.jobExecution.jobInstance.jobName}`}><Button >{row.jobExecution.jobInstance.jobName}</Button></Link> :
+                        t.isCount ? <span>{t.key.map((c, i) => row[c]).join('/')}</span> :
+                          row[t.key]}
+                </TableCell>)}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        {isMore && <div className={classes.seeMore}>
+          <Button onClick={e => { setSkip(s => s + take); }}>
+            See more orders
         </Button>
-      </div>}
-      <Modal
-        aria-labelledby="transition-modal-title"
-        aria-describedby="transition-modal-description"
-        className={classes.modal}
-        open={open}
-        onClose={handleClose}
-        closeAfterTransition
-        BackdropComponent={Backdrop}
-        BackdropProps={{
-          timeout: 500,
-        }}
-      >
-        <Fade in={open}>
-          <div className={classes.paper}>
-            <h2 id="transition-modal-title">Failed Message</h2>
-            <p id="transition-modal-description">{errorMessage}</p>
-          </div>
-        </Fade>
-      </Modal>
+        </div>}
+        <Modal
+          aria-labelledby="transition-modal-title"
+          aria-describedby="transition-modal-description"
+          className={classes.modal}
+          open={open}
+          onClose={handleClose}
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          BackdropProps={{
+            timeout: 500,
+          }}
+        >
+          <Fade in={open}>
+            <div className={classes.paper}>
+              <h2 id="transition-modal-title">Failed Message</h2>
+              <p id="transition-modal-description">{errorMessage}</p>
+            </div>
+          </Fade>
+        </Modal>
+      </Grid>
     </React.Fragment>
   );
 }

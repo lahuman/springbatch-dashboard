@@ -10,10 +10,9 @@ import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
 import TextField from '@material-ui/core/TextField';
 import Fade from '@material-ui/core/Fade';
-import { useParams, useHistory, Link, useLocation } from 'react-router-dom';
-import { format } from 'date-fns'
-import AsyncSelect from 'react-select/async';
-
+import Grid from '@material-ui/core/Grid';
+import { Link, useLocation } from 'react-router-dom';
+import { format } from 'date-fns';
 
 import Title from '../Common/Title';
 
@@ -68,12 +67,9 @@ const tableInfo = [
 ];
 
 let intervalObj = null;
-let inputIntervalObj = null;
 
 export default function JobExecution() {
   const classes = useStyles();
-  const { id } = useParams();
-  const history = useHistory();
   const location = useLocation();
 
   const [rows, setRows] = React.useState([]);
@@ -81,11 +77,8 @@ export default function JobExecution() {
   const [isMore, setIsMore] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState('');
-  const [jobId, setJobId] = React.useState(id || '');
   const [isFirst, setIsFirst] = React.useState(false);
   const [name, setName] = React.useState('');
-  const [selectVal, setSelectVal] = React.useState(null);
-
 
   const handleOpen = (msg) => {
     setErrorMessage(msg);
@@ -99,28 +92,16 @@ export default function JobExecution() {
   const take = 30;
 
   const callList = async () => {
-    const res = await fetch(`${process.env.REACT_APP_API_SERVER}/batch/jobExecution/${jobId}?take=${take}&skip=${skip}${name!==''?`&name=${name}`:``}`);
+    const res = await fetch(`${process.env.REACT_APP_API_SERVER}/batch/jobExecution?take=${take}&skip=${skip}${name !== '' ? `&name=${name}` : ``}`);
     const data = await res.json();
     setRows(r => [...r, ...data.batchJobExecution]);
     if (data.batchJobExecution.length < take) {
       setIsMore(false);
+    } else {
+      setIsMore(true);
     }
   }
 
-  const jobCall = async (jobIdVal, name) => {
-    const res = await fetch(`${process.env.REACT_APP_API_SERVER}/batch/jobInstances?${jobIdVal ? `id=${jobIdVal}` : ''}&${name ? `name=${name}` : ''}`);
-    return await res.json();
-  }
-
-  const convetSelectObj = (job) => job && ({ value: job.jobInstanceId, label: job.jobName });
-
-  const jobList = async (name, callback) => {
-    if (name.length < 3) return;
-    const data = await jobCall(null, name);
-    callback(data.batchJobsInstance.map(convetSelectObj));
-  }
-
-  
   const searchAction = () => {
     setRows([]);
     setIsMore(false);
@@ -134,29 +115,14 @@ export default function JobExecution() {
     }
   };
 
-  const setJobSelect = (jobIdVal) => {
-    setJobId(jobIdVal);
-    setName('');
-    jobCall(jobIdVal).then(jsonData => setSelectVal(jsonData.batchJobsInstance && convetSelectObj(jsonData.batchJobsInstance[0])));
-  }
+  React.useEffect(() => {
+    const paramName = location.search.replace('?name=', '');
+    paramName !== '' && setName(paramName);
+  }, []);
 
   React.useEffect(() => {
-    history.replace(`/jobExecution/${jobId && jobId}`);
-    clearInterval(inputIntervalObj);
-    inputIntervalObj = setTimeout(() => searchAction(), 500);
-  }, [jobId, name]);
-
-  React.useEffect(() => {
-    if (!id) {
-      jobId !== '' && setJobId('');
-      const paramName = location.search.replace('?name=', '');
-      paramName !== '' && setName(paramName);
-      setSelectVal(null);
-    } else {
-      setJobSelect(id)
-    }
-
-  }, [id]);
+    searchAction();
+  }, [name]);
 
   React.useEffect(() => {
     if (!isFirst) {
@@ -174,72 +140,66 @@ export default function JobExecution() {
 
   return (
     <React.Fragment>
-      <Title>Job Execution
-      
-        <div style={{ width: "200px" , margin: "0px 20px 0px 20px"}}>
-          <AsyncSelect
-            cacheOptions
-            defaultOptions
-            width='200px'
-            loadOptions={jobList}
-            value={selectVal}
-            onChange={(data) => {
-              setJobId(data.value);
-              setSelectVal(data);
-            }} />
-        </div>
-          <Button variant="contained" color="" size="small" onClick={e=>{
-            setJobId('');
-            setSelectVal(null);
-            }}>
-            Remove
-          </Button>
-        <TextField label="Job Name" value={name} onChange={e => setName(e.target.value)} style={{margin: "0 100px 0 20px"}} />
-      </Title>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            {tableInfo.map((t, i) => <TableCell key={i}>{t.name}</TableCell>)}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row[tableInfo[0].key]}>
-              {tableInfo.map((t, i) => <TableCell key={i}>
-                {t.dateFormat ? format(new Date(row[t.key]), "yyyy-MM-dd HH:mm") :
-                  t.isStatus ? displayStatus(row[t.key], row[t.message]) :
-                    t.isJob ? <Button onClick={e => setJobSelect(row.jobInstance[t.key])}>{row.jobInstance.jobName}</Button> :
-                      t.isDetail ? <Link to={`/stepExecution/${row[t.key]}`}>{row[t.key]}</Link> :
-                        row[t.key]}
-              </TableCell>)}
+
+      <Grid container style={{ flexGrow: 1 }}>
+        <Grid item xs={12} style={{ marginBottom: '20px' }}>
+          <Grid container direction="row"
+            justify="space-between"
+            alignItems="center" spacing={2}>
+            <Grid item >
+              <Title>Job Execution</Title>
+            </Grid>
+            <Grid item>
+              <TextField label="Search Job" placeholder="Job Name" value={name} style={{ width: '400px' }} onChange={e => setName(e.target.value)} />
+            </Grid>
+          </Grid>
+        </Grid>
+
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              {tableInfo.map((t, i) => <TableCell key={i}>{t.name}</TableCell>)}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      {isMore && <div className={classes.seeMore}>
-        <Button onClick={e => { setSkip(s => s + take); }}>
-          See more orders
+          </TableHead>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row[tableInfo[0].key]}>
+                {tableInfo.map((t, i) => <TableCell key={i}>
+                  {t.dateFormat ? format(new Date(row[t.key]), "yyyy-MM-dd HH:mm") :
+                    t.isStatus ? displayStatus(row[t.key], row[t.message]) :
+                      t.isJob ? <Button onClick={e => setName(row.jobInstance.jobName)}>{row.jobInstance.jobName}</Button> :
+                        t.isDetail ? <Link to={`/stepExecution/${row[t.key]}`}>{row[t.key]}</Link> :
+                          row[t.key]}
+                </TableCell>)}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        {isMore && <div className={classes.seeMore}>
+          <Button onClick={e => { setSkip(s => s + take); }}>
+            See more orders
         </Button>
-      </div>}
-      <Modal
-        aria-labelledby="transition-modal-title"
-        aria-describedby="transition-modal-description"
-        className={classes.modal}
-        open={open}
-        onClose={handleClose}
-        closeAfterTransition
-        BackdropComponent={Backdrop}
-        BackdropProps={{
-          timeout: 500,
-        }}
-      >
-        <Fade in={open}>
-          <div className={classes.paper}>
-            <h2 id="transition-modal-title">Failed Message</h2>
-            <p id="transition-modal-description">{errorMessage}</p>
-          </div>
-        </Fade>
-      </Modal>
+        </div>}
+        <Modal
+          aria-labelledby="transition-modal-title"
+          aria-describedby="transition-modal-description"
+          className={classes.modal}
+          open={open}
+          onClose={handleClose}
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          BackdropProps={{
+            timeout: 500,
+          }}
+        >
+          <Fade in={open}>
+            <div className={classes.paper}>
+              <h2 id="transition-modal-title">Failed Message</h2>
+              <p id="transition-modal-description">{errorMessage}</p>
+            </div>
+          </Fade>
+        </Modal>
+      </Grid>
     </React.Fragment>
   );
 }

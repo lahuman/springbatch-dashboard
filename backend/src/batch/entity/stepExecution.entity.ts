@@ -9,9 +9,6 @@ export class BatchStepExecution {
   stepExecutionId: number;
 
   @Column()
-  jobExecutionId: number;
-
-  @Column()
   version: number;
 
   @Column()

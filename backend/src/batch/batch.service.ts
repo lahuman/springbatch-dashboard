@@ -34,7 +34,7 @@ export class BatchService {
     return whereCondition;
   }
   async findJobInstanceAll(status: ExecuteParam): Promise<BatchJobInstanceRO> {
-    const whereCondition = this._makeWhereCondition(status);
+    const whereCondition = this._makeWhereCondition(status, { jobInstanceId: 'DESC' });
     status.name && (whereCondition['where']['jobName'] = Like(`%${status.name}%`));
     status.id && (whereCondition['where']['jobInstanceId'] = status.id);
 
@@ -46,7 +46,6 @@ export class BatchService {
 
     const builder = this.jobExecutionRepository.createQueryBuilder("execut")
       .leftJoin("execut.jobInstance", "job")
-      // .select("execute.status")
       .addSelect("job.jobName")
       .addSelect("job.jobInstanceId");
 
@@ -54,7 +53,7 @@ export class BatchService {
       builder.andWhere("job.jobName like :name", { name: `%${status.name}%` });
     }
     if (jobInstanceId) {
-      builder.andWhere("execut.jobInstanceId = :jobInstanceId", { jobInstanceId });
+      builder.andWhere("job.jobInstanceId = :jobInstanceId", { jobInstanceId });
     }
 
     if (status.take) {
@@ -69,11 +68,27 @@ export class BatchService {
   }
 
   async findStepExecutionAll(jobExecutionId: string, status: ExecuteParam): Promise<BatchStepExecutionRO> {
-    const whereCondition = this._makeWhereCondition(status, { lastUpdated: 'ASC' });
-    jobExecutionId && (whereCondition['where']['jobExecutionId'] = jobExecutionId);
 
-    const batchStepExecution = await this.stepExecutionRepository.find(whereCondition);
-    return { batchStepExecution };
+    const builder = this.stepExecutionRepository.createQueryBuilder("step")
+      .leftJoinAndSelect("step.jobExecution", "execut")
+      .leftJoinAndSelect("execut.jobInstance", "job");
+
+    if (status.name) {
+      builder.andWhere("step.stepName like :name", { name: `%${status.name}%` });
+    }
+
+    if(jobExecutionId){
+      builder.andWhere("execut.jobExecutionId = :jobExecutionId", { jobExecutionId });
+    }
+    if (status.take) {
+      builder.take(status.take);
+      builder.skip(status.skip);
+    }
+
+    const data = await builder.orderBy("step.lastUpdated", "DESC")
+      .getMany();
+
+    return { batchStepExecution: data };
   }
 
   _convertDashboardData(dt): JobRunningScoreRO {
