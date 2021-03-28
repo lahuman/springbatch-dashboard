@@ -14,18 +14,18 @@ These instructions will get you a copy of the project up and running on your loc
 ### Screenshot
 
 #### Dashboard
-![](./sb_db_01.png)
+![](./sb_db-01.png)
 
 #### Job Instance List
-![](./sb_db_02.png)
+![](./sb_db-02.png)
 
 #### Job Execute List
-![](./sb_db_03.png)
+![](./sb_db-03.png)
 
 #### Step Execute List
-![](./sb_db_04.png)
+![](./sb_db-04.png)
 
-![](./sb_db_05.png)
+![](./sb_db-05.png)
 
 ### Prerequisites
 
