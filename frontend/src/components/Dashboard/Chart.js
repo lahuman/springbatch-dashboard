@@ -36,8 +36,6 @@ export default function JobRunningDashboard() {
               <Title>Job Running Story</Title>
             </Grid>
             <Grid item >
-
-
               <DateRangePicker
                 inputFormat="yyyy-MM-dd"
                 mask="____-__-__"
@@ -83,7 +81,7 @@ export default function JobRunningDashboard() {
                 bottom: 5,
               }}
               onClick={(dt, idx) => {
-                dt.activePayload && history.push(`/jobExecution?name=${dt.activePayload[0].payload.jobName}`);
+                dt.activePayload && history.push(`/jobExecution?name=${dt.activePayload[0].payload.jobName}&startDate=${format(value[0], 'yyyy-MM-dd')}&endDate=${format(value[1], 'yyyy-MM-dd')}`);
               }}
             >
               <CartesianGrid strokeDasharray="3 3" />

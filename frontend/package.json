@@ -11,6 +11,7 @@
     "@testing-library/user-event": "^12.1.10",
     "date-fns": "^2.19.0",
     "node-fetch": "^2.6.1",
+    "query-string": "^4.3.4",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-router-dom": "^5.2.0",
