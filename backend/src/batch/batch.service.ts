@@ -47,7 +47,9 @@ export class BatchService {
     const builder = this.jobExecutionRepository.createQueryBuilder("execut")
       .leftJoin("execut.jobInstance", "job")
       .addSelect("job.jobName")
-      .addSelect("job.jobInstanceId");
+      .addSelect("job.jobInstanceId")
+      .where("execut.lastUpdated >= :startDate", { startDate: status.startDate })
+      .andWhere("execut.lastUpdated <= concat(:endDate, ' 23:59:59')", { endDate: status.endDate });
 
     if (status.name) {
       builder.andWhere("job.jobName like :name", { name: `%${status.name}%` });

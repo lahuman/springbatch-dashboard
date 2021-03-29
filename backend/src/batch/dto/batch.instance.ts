@@ -21,7 +21,14 @@ export class BatchStepExecutionRO {
   batchStepExecution: BatchStepExecution[];
 }
 
-export class ExecuteParam {
+export class JobDashBoardParam {
+  @ApiProperty({ required: true })
+  startDate: string;
+  @ApiProperty({ required: true })
+  endDate: string;
+}
+
+export class ExecuteParam extends JobDashBoardParam {
   @ApiProperty({ required: false })
   status?: string;
   @ApiProperty({ required: false })
@@ -32,13 +39,6 @@ export class ExecuteParam {
   name?: string;
   @ApiProperty({ required: false })
   id?: string;
-}
-
-export class JobDashBoardParam {
-  @ApiProperty({ required: true })
-  startDate: string;
-  @ApiProperty({ required: true })
-  endDate: string;
 }
 
 export class JobRunningScoreRO {
