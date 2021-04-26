@@ -37,13 +37,13 @@ export default function JobInstance() {
 
 
   const searchAction = () => {
-    setRows([]);
+    setRows([]);  
     setIsMore(false);
     if (skip === 0) {
       clearTimeout(intervalObj);
       intervalObj = setTimeout(() => {
         callList();
-      }, 500)
+      }, 800)
     } else {
       setSkip(0);
     }
