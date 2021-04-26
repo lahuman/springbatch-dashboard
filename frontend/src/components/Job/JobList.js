@@ -43,7 +43,7 @@ export default function JobInstance() {
       clearTimeout(intervalObj);
       intervalObj = setTimeout(() => {
         callList();
-      }, 800)
+      }, 500)
     } else {
       setSkip(0);
     }
@@ -54,7 +54,7 @@ export default function JobInstance() {
   }, [name]);
 
   React.useEffect(() => {
-    callList();
+    searchAction();
   }, [skip]);
 
   const classes = useStyles();
