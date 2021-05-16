@@ -58,7 +58,7 @@ export default function JobRunningDashboard() {
             justify="space-between"
             alignItems="center" spacing={2}>
             <Grid item >
-              <Title>Job Running {chartType === "summary" && "Summary by Job Name" || "Daliy "}</Title>
+              <Title>Job Running {chartType === "summary" && "Summary" || "Daliy "}</Title>
             </Grid>
             <Grid item >
               <FormControl style={{ width: '100px' }}>
@@ -148,7 +148,7 @@ export default function JobRunningDashboard() {
               }}
               onClick={(dt, idx) => {
                 if (dt && dt.activePayload && dt.activePayload.length > 0) {
-                  history.push(`/jobExecution?name=${dt.activePayload[0].payload.jobName}&startDate=${format(value[0], 'yyyy-MM-dd')}&endDate=${format(value[1], 'yyyy-MM-dd')}`);
+                  history.push(`/jobExecution?name=${dt.activePayload[0].payload.jobName.split('\r\n')[1]}&startDate=${format(value[0], 'yyyy-MM-dd')}&endDate=${format(value[1], 'yyyy-MM-dd')}`);
                 }
               }}
             >
