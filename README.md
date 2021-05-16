@@ -16,6 +16,8 @@ These instructions will get you a copy of the project up and running on your loc
 #### Dashboard
 ![](./sb_db-01.png)
 
+![](./sb_db-06.png)
+
 #### Job Instance List
 ![](./sb_db-02.png)
 
@@ -80,6 +82,12 @@ $ npm run start
 
 ... Enter http://localhost:8080 in the browser to use
 ```
+
+## Version
+
+- 1.2 Add dashboard chart type (daily) & some bug fix & module update (2021-05-16)
+- 1.1 Some bug fix (2021-04-26)
+- 1.0 Release Springbatch meta dashboard (2021-03-22)
 
 
 ## License

@@ -30,11 +30,18 @@ export class BatchController {
     return await this.batchService.findStepExecutionAll(jobInstanceId, status);
   }
 
-  @ApiOperation({ summary: 'Get Dashboard' })
+  @ApiOperation({ summary: 'Get Dashboard summary by job name' })
   @ApiResponse({ status: 200, description: 'Return dashboard data', type: JobRunningScoreRO, isArray: true })
-  @Get("dashBoard")
-  async Dashboard(@Query() status: JobDashBoardParam): Promise<JobRunningScoreRO[]> {
-    return await this.batchService.findDashBoardData(status);
+  @Get("dashBoard/summary")
+  async dashboardSummary(@Query() status: JobDashBoardParam): Promise<JobRunningScoreRO[]> {
+    return await this.batchService.findDashBoardData4Summary(status);
+  }
+
+  @ApiOperation({ summary: 'Get Dashboard summary by daliy' })
+  @ApiResponse({ status: 200, description: 'Return dashboard data', type: JobRunningScoreRO, isArray: true })
+  @Get("dashBoard/daily")
+  async dashboardDaliy(@Query() status: JobDashBoardParam): Promise<JobRunningScoreRO[]> {
+    return await this.batchService.findDashBoardData4Daliy(status);
   }
 
 }

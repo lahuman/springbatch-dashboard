@@ -79,7 +79,7 @@ export class BatchService {
       builder.andWhere("step.stepName like :name", { name: `%${status.name}%` });
     }
 
-    if(jobExecutionId){
+    if (jobExecutionId) {
       builder.andWhere("execut.jobExecutionId = :jobExecutionId", { jobExecutionId });
     }
     if (status.take) {
@@ -93,29 +93,35 @@ export class BatchService {
     return { batchStepExecution: data };
   }
 
+  _makeJobName(dt): string {
+    return `${dt.runDate && `${dt.runDate}\r\n` || ''}${dt.job_JOB_NAME}`;
+  }
   _convertDashboardData(dt): JobRunningScoreRO {
     const data = {
-      jobName: dt.job_JOB_NAME,
+      jobName: this._makeJobName(dt)
     };
 
     dt.execut_STATUS === "FAILED" ? data["failCount"] = dt.statusCnt : data["completCount"] = dt.statusCnt;
     return data;
   }
+
   _dashboardDataMerge(data): JobRunningScoreRO[] {
-    let beforeName = -1;
+    let beforeName: string = '';
+
     return data.reduce((acc, cur) => {
-      if (beforeName === cur.job_JOB_NAME) {
+      const newName = this._makeJobName(cur);
+      if (beforeName === newName) {
         const before = acc.pop();
         acc.push({ ...before, ...this._convertDashboardData(cur) });
       } else {
         acc.push(this._convertDashboardData(cur));
       }
-      beforeName = cur.job_JOB_NAME;
+      beforeName = newName;
       return acc;
     }, []);
   }
 
-  async findDashBoardData(status: JobDashBoardParam): Promise<JobRunningScoreRO[]> {
+  async findDashBoardData4Summary(status: JobDashBoardParam): Promise<JobRunningScoreRO[]> {
     const data = await this.jobInstanceRepository.createQueryBuilder("job")
       .select(["job.jobName"])
       .leftJoin("job.batchJobExecution", "execut")
@@ -123,6 +129,26 @@ export class BatchService {
       .addSelect("COUNT(execut.jobExecutionId)", 'statusCnt')
       .addGroupBy("job.jobName")
       .addGroupBy("execut.status")
+      .where("execut.lastUpdated >= :startDate", { startDate: status.startDate })
+      .andWhere("execut.lastUpdated <= concat(:endDate, ' 23:59:59')", { endDate: status.endDate })
+      .orderBy("job.jobName")
+      .getRawMany();
+
+    const result = this._dashboardDataMerge(data);
+    return result;
+  }
+
+
+  async findDashBoardData4Daliy(status: JobDashBoardParam): Promise<JobRunningScoreRO[]> {
+    const data = await this.jobInstanceRepository.createQueryBuilder("job")
+      .select(["job.jobName"])
+      .leftJoin("job.batchJobExecution", "execut")
+      .addSelect("execut.status")
+      .addSelect("DATE_FORMAT(execut.lastUpdated, '%Y%m%d') as runDate")
+      .addSelect("COUNT(execut.jobExecutionId)", 'statusCnt')
+      .addGroupBy("job.jobName")
+      .addGroupBy("execut.status")
+      .addGroupBy("DATE_FORMAT(execut.lastUpdated, '%Y%m%d')")
       .where("execut.lastUpdated >= :startDate", { startDate: status.startDate })
       .andWhere("execut.lastUpdated <= concat(:endDate, ' 23:59:59')", { endDate: status.endDate })
       .orderBy("job.jobName")
