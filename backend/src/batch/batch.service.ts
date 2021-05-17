@@ -151,8 +151,8 @@ export class BatchService {
       .addGroupBy("DATE_FORMAT(execut.lastUpdated, '%Y%m%d')")
       .where("execut.lastUpdated >= :startDate", { startDate: status.startDate })
       .andWhere("execut.lastUpdated <= concat(:endDate, ' 23:59:59')", { endDate: status.endDate })
-      .orderBy("job.jobName")
-      .addOrderBy("runDate")
+      .orderBy("runDate")
+      .addOrderBy("job.jobName")
       .getRawMany();
 
     const result = this._dashboardDataMerge(data);
