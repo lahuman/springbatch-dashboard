@@ -110,7 +110,7 @@ export class BatchService {
 
     return data.reduce((acc, cur) => {
       const newName = this._makeJobName(cur);
-      if (beforeName === newName) {
+      if (beforeName == newName) {
         const before = acc.pop();
         acc.push({ ...before, ...this._convertDashboardData(cur) });
       } else {
@@ -152,6 +152,7 @@ export class BatchService {
       .where("execut.lastUpdated >= :startDate", { startDate: status.startDate })
       .andWhere("execut.lastUpdated <= concat(:endDate, ' 23:59:59')", { endDate: status.endDate })
       .orderBy("job.jobName")
+      .addOrderBy("runDate")
       .getRawMany();
 
     const result = this._dashboardDataMerge(data);
